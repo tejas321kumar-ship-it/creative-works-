@@ -1,0 +1,30 @@
+# Render Blueprint: deploys the static export in /out as a Render Static Site (free, global CDN).
+# Render dashboard → New → Blueprint → pick this repo. Or New → Static Site with the same values.
+services:
+  - type: web
+    name: creative-works
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: out
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Set these two in the Render dashboard (Environment tab), then redeploy:
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false # e.g. https://creativeworks.in (your final domain, no trailing slash)
+      - key: NEXT_PUBLIC_FORM_ENDPOINT
+        sync: false # optional: Formspree/Getform URL; without it the form sends to WhatsApp
+    headers:
+      - path: /_next/static/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /work/*
+        name: Cache-Control
+        value: public, max-age=604800
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
